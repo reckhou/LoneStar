@@ -1,0 +1,22 @@
+{
+  "project_type":"javascript",
+  "debugMode":1,
+  "showFPS":true,
+  "frameRate":60,
+  "id":"gameCanvas",
+  "renderMode":2,
+  "engineDir":"frameworks/cocos2d-html5",
+  "modules":[
+    "menus"
+  ],
+  "jsList":[
+    "src/mainscene.js",
+    "src/uiLayer.js",
+    "src/gameconfig.js",
+    "src/battleLayer.js",
+    "src/resource.js",
+    "src/ship.js",
+    "src/energy.js",
+    "src/astroid.js"
+  ]
+}
