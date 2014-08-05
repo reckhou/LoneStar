@@ -27,6 +27,6 @@ var Energy = cc.Sprite.extend({
 	},
 	collideRect:function(x, y) {
 		var w = this.width*this.scaleX, h = this.height*this.scaleY;
-		return cc.rect(x - w / 2, y - h / 4, w, h);
+		return cc.rect(x - w / 2, y - h / 2, w, h);
 	}
 });

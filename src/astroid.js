@@ -15,6 +15,9 @@ var Astroid = cc.Sprite.extend({
 		this.rotation = Math.random() * 360;
 		this.runAction(cc.RepeatForever.create(cc.RotateBy.create(5, -90, -90)));
 		this.xVelocity = GM.ASTROID.XVELOCITY + (Math.random()*2-1)*100;
-		cc.log(this.xVelocity);
-	}
+	},
+	collideRect:function(x, y) {
+	  var w = this.width*this.scaleX, h = this.height*this.scaleY;
+	  return cc.rect(x - w / 2 * 0.9, y - h / 2 * 0.9, w * 0.9, h * 0.9);
+	},
 });

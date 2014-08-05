@@ -15,13 +15,14 @@ var BattleLayer = cc.Layer.extend({
 		g_sharedGameLayer = this;
 		var size = cc.director.getWinSize();
 
-		var ship = new Ship(this.gravity, size.height-50, 25);
+		var ship = new Ship(this.gravity, size.height-GM.SHIP.VBORDERLIMIT*2, GM.SHIP.VBORDERLIMIT);
 		this.addChild(ship);
 		this.ship = ship;
 		this.ship.x = 100;
 		this.ship.y = size.height/2;
+		this.ship.setInvunerable();
 		this.schedule(this.spawnEnergy, 2);
-		this.schedule(this.spawnAstroid, 5);
+		this.schedule(this.spawnAstroid, 4);
 		this.schedule(this.collideCheck, 1/60);
 		return true;
 	},
@@ -33,11 +34,12 @@ var BattleLayer = cc.Layer.extend({
 			var type = Math.floor((Math.random() * 3));
 //			cc.log("Energy Type: "+type);
 			var startPos = cc.p(screenSize.width + 100 + Math.floor(Math.random()*400 + 100), Math.floor(Math.random() * (screenSize.height-150)/spawnCnt + (screenSize.height-150)/spawnCnt*(i-1) + 100));
+			var endPos = cc.p(-200, Math.random() * screenSize.height - GM.SHIP.VBORDERLIMIT*2 + GM.SHIP.VBORDERLIMIT);
 			var energy = new Energy(type, startPos);
 	
 			this.energyArray.push(energy);
 			this.addChild(energy);
-			var action = cc.MoveTo.create((screenSize.width + 200)/energy.xVelocity, cc.p(-100, energy.y+(Math.random()*2-1)*200));
+			var action = cc.MoveTo.create((screenSize.width + 200)/energy.xVelocity, endPos);
 			energy.runAction(cc.Sequence.create(action, cc.CallFunc.create(this.removeEnergy, this, energy)));
 		}
 	},
@@ -47,11 +49,11 @@ var BattleLayer = cc.Layer.extend({
 			var screenSize = cc.director.getWinSize();
 //			cc.log("Energy Type: "+type);
 			var startPos = cc.p(screenSize.width + 100, Math.floor(Math.random() * (screenSize.height-150)/spawnCnt + (screenSize.height-150)/spawnCnt*(i-1) + 100));
+			var endPos = cc.p(-200, Math.random() * screenSize.height - GM.SHIP.VBORDERLIMIT*2 + GM.SHIP.VBORDERLIMIT);
 			var astroid = new Astroid(startPos);
-
 			this.astroidArray.push(astroid);
 			this.addChild(astroid);
-			var action = cc.MoveTo.create((screenSize.width + 200)/astroid.xVelocity, cc.p(-100, astroid.y+(Math.random()*2-1)*200));
+			var action = cc.MoveTo.create((screenSize.width + 200)/astroid.xVelocity, endPos);
 			astroid.runAction(cc.Sequence.create(action, cc.CallFunc.create(this.removeAstroid, this, astroid)));
 		}
 	},
@@ -99,16 +101,29 @@ var BattleLayer = cc.Layer.extend({
 		if (this.gameRestarting) {
 			return;
 		}
-		if (this.ship.energyArray[GM.ENERGYTYPE.BLUE] <= 0) {
-				var gameOver = cc.LabelTTF.create("GAME OVER!", "Arial", "64");
-				this.addChild(gameOver);
-				var winSize = cc.director.getWinSize();
-				gameOver.x = winSize.width/2;
-				gameOver.y = winSize.height/2;
-				this.schedule(this.restartGame, 3);
-				this.gameRestarting = true;
-				return;
+//		if (this.ship.energyArray[GM.ENERGYTYPE.BLUE] <= 0) {
+//				var gameOver = cc.LabelTTF.create("GAME OVER!", "Arial", "64");
+//				this.addChild(gameOver);
+//				var winSize = cc.director.getWinSize();
+//				gameOver.x = winSize.width/2;
+//				gameOver.y = winSize.height/2;
+//				this.schedule(this.restartGame, 3);
+//				this.gameRestarting = true;
+//				return;
+//		}
+		
+		/* Astroid check */
+		if (this.ship.invunerable == false) {
+  		for (var i = 0; i < this.astroidArray.length; i++) {
+  		  if (this.collide(this.ship, this.astroidArray[i])) {
+  		    cc.log("collide!");
+  		    this.ship.damage();
+  		    break;
+  		  }
+  		}
 		}
+		
+		/* Energy check */
 		for (var i = 0; i < this.energyArray.length; i++) {
 			if (this.collide(this.ship, this.energyArray[i])) {
 				var energyType = this.energyArray[i].type;

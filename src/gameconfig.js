@@ -36,3 +36,8 @@ GM.ASTROID.TYPE = {
     SMALL:0,
     BIG:1
 };
+
+GM.SHIP = {
+    INVUNERABLETIME: 3,
+    VBORDERLIMIT: 25 // vertical position limit according to border
+};

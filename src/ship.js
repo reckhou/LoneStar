@@ -9,6 +9,7 @@ var Ship = cc.Sprite.extend({
 	combo:0,
 	comboLevel:1,
 	latestEnergy:null,
+	invunerable: false,
 	ctor:function (gravity, yMax, yMin) {
 		this._super(res.Ship_png);
 		this.scaleX = 0.6;
@@ -19,7 +20,7 @@ var Ship = cc.Sprite.extend({
 		this.yMax = yMax;
 		this.yMin = yMin;
 		this.schedule(this.update, 1/60);
-		this.schedule(this.lowEnergy, 1.5);
+//		this.schedule(this.lowEnergy, 1.5);
 		this.schedule(this.consumeEnergy, 1);
 		this.energyArray = [GM.STARTENERGY.RED, GM.STARTENERGY.YELLOW, GM.STARTENERGY.BLUE];
 		return true;
@@ -81,7 +82,34 @@ var Ship = cc.Sprite.extend({
 	},
 	collideRect:function(x, y) {
 		var w = this.width*this.scaleX, h = this.height*this.scaleY;
-		return cc.rect(x - w / 2, y - h / 4, w, h);
+		return cc.rect(x, y, w, h*0.9);
+	},
+	damage:function(astroidType) {
+	  this.setInvunerable();
+	  var damage = 10;
+	  if (astroidType == GM.ASTROID.TYPE.BIG) {
+	    damage = 20;
+	  }
+	  
+	  if (this.energyArray[GM.ENERGYTYPE.YELLOW] >= damage) {
+	    this.energyArray[GM.ENERGYTYPE.YELLOW] -= damage;
+	  } else {
+	    var damageBlue = damage - this.energyArray[GM.ENERGYTYPE.YELLOW]; //TODO: Damage to blue is 2X to yellow
+	    this.energyArray[GM.ENERGYTYPE.YELLOW] = 0;
+	    this.energyArray[GM.ENERGYTYPE.BLUE] -= damageBlue;
+	  }
+	},
+	setInvunerable:function() {
+	  this.invunerable = true;
+	  this.runAction(cc.RepeatForever.create(cc.Sequence.create(cc.FadeIn.create(0.2), cc.FadeOut.create(0.2))));
+	  this.schedule(this.stopInvunerable, GM.SHIP.INVUNERABLETIME);
+	},
+	stopInvunerable:function() {
+	  cc.log("stopInvunerable!");
+	  this.stopAllActions();
+	  this.unschedule(this.stopInvunerable);
+	  this.invunerable = false;
+	  this.runAction(cc.FadeIn.create(0.2));
 	},
 	skillCompond:function() {
 		
