@@ -1,4 +1,4 @@
-var g_sharedGameLayer;
+var g_sharedBattleLayer;
 
 MAX_CONTAINT_WIDTH = 200;
 MAX_CONTAINT_HEIGHT = 200;
@@ -12,7 +12,7 @@ var BattleLayer = cc.Layer.extend({
 	init:function() {
 		this.energyArray = new Array();
 		this.astroidArray = new Array();
-		g_sharedGameLayer = this;
+		g_sharedBattleLayer = this;
 		var size = cc.director.getWinSize();
 
 		var ship = new Ship(this.gravity, size.height-GM.SHIP.VBORDERLIMIT*2, GM.SHIP.VBORDERLIMIT);
@@ -21,7 +21,7 @@ var BattleLayer = cc.Layer.extend({
 		this.ship.x = 100;
 		this.ship.y = size.height/2;
 		this.ship.setInvunerable();
-		this.schedule(this.spawnEnergy, 2);
+		this.schedule(this.spawnEnergy, 5);
 		this.schedule(this.spawnAstroid, 4);
 		this.schedule(this.collideCheck, 1/60);
 		return true;
@@ -101,16 +101,16 @@ var BattleLayer = cc.Layer.extend({
 		if (this.gameRestarting) {
 			return;
 		}
-//		if (this.ship.energyArray[GM.ENERGYTYPE.BLUE] <= 0) {
-//				var gameOver = cc.LabelTTF.create("GAME OVER!", "Arial", "64");
-//				this.addChild(gameOver);
-//				var winSize = cc.director.getWinSize();
-//				gameOver.x = winSize.width/2;
-//				gameOver.y = winSize.height/2;
-//				this.schedule(this.restartGame, 3);
-//				this.gameRestarting = true;
-//				return;
-//		}
+		if (this.ship.energyArray[GM.ENERGYTYPE.BLUE] <= 0) {
+				var gameOver = cc.LabelTTF.create("GAME OVER!", "Arial", "64");
+				this.addChild(gameOver);
+				var winSize = cc.director.getWinSize();
+				gameOver.x = winSize.width/2;
+				gameOver.y = winSize.height/2;
+				this.schedule(this.restartGame, 3);
+				this.gameRestarting = true;
+				return;
+		}
 		
 		/* Astroid check */
 		if (this.ship.invunerable == false) {
@@ -128,20 +128,7 @@ var BattleLayer = cc.Layer.extend({
 			if (this.collide(this.ship, this.energyArray[i])) {
 				var energyType = this.energyArray[i].type;
 				
-				if (this.ship.lastEnergy == energyType)
-				{
-					this.ship.combo++;
-					this.ship.comboLevel = 1+Math.floor(this.ship.combo/GM.COMBO.PERLEVELCNT);
-				} else {
-					this.ship.combo = 0;
-					this.ship.comboLevel = GM.COMBO.STARTLEVEL;
-					this.ship.lastEnergy = energyType;
-				}
-
-				this.ship.energyArray[energyType] += this.ship.comboLevel * GM.ENERGY.POWER;
-				if (this.ship.energyArray[energyType] > GM.ENERGY.MAX) {
-					this.ship.energyArray[energyType] = GM.ENERGY.MAX;
-				}
+				this.ship.consumeEnergy(energyType);
 				this.energyArray[i].stopAllActions();
 				this.removeEnergy(this.energyArray[i]);
 			}
@@ -157,7 +144,6 @@ var BattleLayer = cc.Layer.extend({
 		return cc.rectIntersectsRect(aRect, bRect);
 	},
 	restartGame:function() {
-		cc.audioEngine.stopMusic();
 		cc.director.runScene(new MainScene());
 	}
 });

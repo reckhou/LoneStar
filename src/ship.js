@@ -20,8 +20,8 @@ var Ship = cc.Sprite.extend({
 		this.yMax = yMax;
 		this.yMin = yMin;
 		this.schedule(this.update, 1/60);
-//		this.schedule(this.lowEnergy, 1.5);
-		this.schedule(this.consumeEnergy, 1);
+		this.schedule(this.lowEnergy, 2);
+		this.schedule(this.engineRoutine, 1);
 		this.energyArray = [GM.STARTENERGY.RED, GM.STARTENERGY.YELLOW, GM.STARTENERGY.BLUE];
 		return true;
 	},
@@ -44,13 +44,48 @@ var Ship = cc.Sprite.extend({
 		g_sharedUILayer.updateShipData();
 	},
 	lowEnergy:function() {
-		if (this.energyArray[GM.ENERGYTYPE.BLUE] < 20) {
-			cc.audioEngine.playMusic(res.Alarm_mp3, false);
+		if (this.energyArray[GM.ENERGYTYPE.BLUE] < 15) {
+		  g_sharedUILayer.warningLabel.visible = true;
+			cc.audioEngine.playEffect(res.Low_energy_wav, false);
 			return;
+		} else {
+		  g_sharedUILayer.warningLabel.visible = false;
 		}
 	},
-	consumeEnergy:function() {
-		this.energyArray[GM.ENERGYTYPE.BLUE] -= 1;
+	engineRoutine:function() {
+	  this.energyArray[GM.ENERGYTYPE.BLUE] -= 1;
+	},
+	consumeEnergy:function(energyType) {
+	  if (this.lastEnergy == energyType)
+	  {
+	    this.combo++;
+	    this.comboLevel = 1+Math.floor(this.combo/GM.COMBO.PERLEVELCNT);
+	  } else {
+	    this.combo = 0;
+	    this.comboLevel = GM.COMBO.STARTLEVEL;
+	    this.lastEnergy = energyType;
+	  }
+
+	  this.energyArray[energyType] += this.comboLevel * GM.ENERGY.POWER;
+	  if (this.energyArray[energyType] > GM.ENERGY.MAX) {
+	    this.energyArray[energyType] = GM.ENERGY.MAX;
+	  }
+	  
+	  switch (energyType) {
+	    case GM.ENERGYTYPE.RED:
+	      cc.audioEngine.playEffect(res.Energy_red_mp3);
+	      break;
+	      
+	    case GM.ENERGYTYPE.YELLOW:
+	      cc.audioEngine.playEffect(res.Energy_yellow_mp3);
+	      break;
+	      
+	    case GM.ENERGYTYPE.BLUE:
+	      cc.audioEngine.playEffect(res.Energy_blue_wav);
+	      break;
+	  }
+	    
+	  
 	},
 	up:function() {
 		this.status = "up";
@@ -86,9 +121,10 @@ var Ship = cc.Sprite.extend({
 	},
 	damage:function(astroidType) {
 	  this.setInvunerable();
-	  var damage = 10;
+	  cc.audioEngine.playMusic(res.Damage_wav, false);
+	  var damage = GM.ASTROID.DAMAGE;
 	  if (astroidType == GM.ASTROID.TYPE.BIG) {
-	    damage = 20;
+	    damage *= 2;
 	  }
 	  
 	  if (this.energyArray[GM.ENERGYTYPE.YELLOW] >= damage) {

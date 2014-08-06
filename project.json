@@ -17,6 +17,8 @@
     "src/resource.js",
     "src/ship.js",
     "src/energy.js",
-    "src/astroid.js"
+    "src/astroid.js",
+    "src/button.js",
+    "src/globalvar.js"
   ]
 }
