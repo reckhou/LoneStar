@@ -73,9 +73,9 @@ var MainScene = cc.Scene.extend({
 		var layer = new mainLayer();
 		this.addChild(layer);
 		if (!gIsMusicPlaying) {
-		  cc.log("Play music: "+res.Bgm_mp3);
+		  cc.log("Play music: "+res.Bgm_universe_mp3);
 		  gIsMusicPlaying = true;
-			cc.audioEngine.playMusic(res.Bgm_mp3, true);
+			cc.audioEngine.playMusic(res.Bgm_universe_mp3, true);
 		} else {
 		  cc.log("Music already playing!");
 		}
