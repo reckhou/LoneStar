@@ -23,6 +23,8 @@ var Energy = cc.Sprite.extend({
 		this.y = startPos.y;
 		this.scale = 0.5;
 		this.type = type;
+		this.xVelocity = this.xVelocity + this.xVelocity * (Math.random()*2-1)/2;
+		this.runAction(cc.RepeatForever.create(cc.RotateBy.create(2, -90, -90)));
 		return true;
 	},
 	collideRect:function(x, y) {

@@ -8,9 +8,10 @@ var Astroid = cc.Sprite.extend({
 		var rdm = Math.floor(Math.random()*10);
 		if (rdm == 0) {
 		  this.type = GM.ASTROID.TYPE.BIG;
+		  this.scale = 0.7
 		} else {
 		  this.type = GM.ASTROID.TYPE.SMALL;
-		  this.scale = 0.35;
+		  this.scale = 0.25;
 		}
 		this.rotation = Math.random() * 360;
 		this.runAction(cc.RepeatForever.create(cc.RotateBy.create(5, -90, -90)));
@@ -18,6 +19,12 @@ var Astroid = cc.Sprite.extend({
 	},
 	collideRect:function(x, y) {
 	  var w = this.width*this.scaleX, h = this.height*this.scaleY;
-	  return cc.rect(x - w / 2 * 0.9, y - h / 2 * 0.9, w * 0.9, h * 0.9);
+	  return cc.rect(x - w / 2*0.8, y - h / 2*0.8, w*0.8, h*0.8);
 	},
+	eliminate:function(x, y) {
+	  var scale = cc.ScaleTo.create(0.2, 0);
+	  var clean = cc.CallFunc.create(this.removeFromParentAndCleanup, this, true)
+	  this.runAction(cc.Sequence.create(scale, clean));
+	  cc.audioEngine.playEffect(res.AstroidExplode_wav);
+	}
 });

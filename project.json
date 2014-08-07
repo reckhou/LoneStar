@@ -19,6 +19,7 @@
     "src/energy.js",
     "src/astroid.js",
     "src/button.js",
-    "src/globalvar.js"
+    "src/globalvar.js",
+    "src/laser.js"
   ]
 }

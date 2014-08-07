@@ -10,10 +10,12 @@ var Ship = cc.Sprite.extend({
 	comboLevel:1,
 	latestEnergy:null,
 	invunerable: false,
+	shieldActivate:false,
+	energyShield: null,
+	laserField: null,
 	ctor:function (gravity, yMax, yMin) {
 		this._super(res.Ship_png);
-		this.scaleX = 0.6;
-		this.scaleY = 0.5;
+		this.scale = 0.5;
 		this.gravity = gravity;
 		this.anchorY = 0;
 		this.anchorX = 0;
@@ -21,8 +23,13 @@ var Ship = cc.Sprite.extend({
 		this.yMin = yMin;
 		this.schedule(this.update, 1/60);
 		this.schedule(this.lowEnergy, 2);
-		this.schedule(this.engineRoutine, 1);
+		this.schedule(this.engineRoutine, 0.6);
 		this.energyArray = [GM.STARTENERGY.RED, GM.STARTENERGY.YELLOW, GM.STARTENERGY.BLUE];
+		this.energyShield = new cc.Sprite.create(res.EnergySheild_png);
+		this.addChild(this.energyShield);
+		this.energyShield.x = this.width / 2;
+		this.energyShield.y = this.height / 2;
+		this.energyShield.runAction(cc.FadeOut.create(0.1));
 		return true;
 	},
 	update:function(dt) {
@@ -44,7 +51,7 @@ var Ship = cc.Sprite.extend({
 		g_sharedUILayer.updateShipData();
 	},
 	lowEnergy:function() {
-		if (this.energyArray[GM.ENERGYTYPE.BLUE] < 15) {
+		if (this.energyArray[GM.ENERGYTYPE.BLUE] < 30) {
 		  g_sharedUILayer.warningLabel.visible = true;
 			cc.audioEngine.playEffect(res.Low_energy_wav, false);
 			return;
@@ -66,7 +73,7 @@ var Ship = cc.Sprite.extend({
 	    this.lastEnergy = energyType;
 	  }
 
-	  this.energyArray[energyType] += this.comboLevel * GM.ENERGY.POWER;
+	  this.energyArray[energyType] += /*this.comboLevel * */GM.ENERGY.POWER;
 	  if (this.energyArray[energyType] > GM.ENERGY.MAX) {
 	    this.energyArray[energyType] = GM.ENERGY.MAX;
 	  }
@@ -117,11 +124,13 @@ var Ship = cc.Sprite.extend({
 	},
 	collideRect:function(x, y) {
 		var w = this.width*this.scaleX, h = this.height*this.scaleY;
-		return cc.rect(x, y, w, h*0.9);
+		return cc.rect(x, y, w, h);
 	},
-	damage:function(astroidType) {
-	  this.setInvunerable();
-	  cc.audioEngine.playMusic(res.Damage_wav, false);
+	hit:function(astroidType) {
+	  if (this.shieldActivate || this.invunerable) {
+	    return;
+	  }
+	  
 	  var damage = GM.ASTROID.DAMAGE;
 	  if (astroidType == GM.ASTROID.TYPE.BIG) {
 	    damage *= 2;
@@ -129,34 +138,56 @@ var Ship = cc.Sprite.extend({
 	  
 	  if (this.energyArray[GM.ENERGYTYPE.YELLOW] >= damage) {
 	    this.energyArray[GM.ENERGYTYPE.YELLOW] -= damage;
+	    this.setShieldActivate()
 	  } else {
-	    var damageBlue = damage - this.energyArray[GM.ENERGYTYPE.YELLOW]; //TODO: Damage to blue is 2X to yellow
-	    this.energyArray[GM.ENERGYTYPE.YELLOW] = 0;
-	    this.energyArray[GM.ENERGYTYPE.BLUE] -= damageBlue;
+//	    var damageBlue = damage - this.energyArray[GM.ENERGYTYPE.YELLOW]; //TODO: Damage to blue is 2X to yellow
+//	    this.energyArray[GM.ENERGYTYPE.YELLOW] = 0;
+	    this.energyArray[GM.ENERGYTYPE.BLUE] -= damage;
+	    this.setInvunerable();
 	  }
+	},
+	setShieldActivate:function() {
+	  this.shieldActivate = true;
+	  this.energyShield.runAction(cc.RepeatForever.create(cc.Sequence.create(cc.FadeIn.create(0.2), cc.FadeOut.create(0.2))));
+	  this.schedule(this.shieldDeactivate, GM.SHIP.INVUNERABLETIME);
+	  cc.audioEngine.playEffect(res.Shield_wav);
+	},
+	shieldDeactivate:function() {
+	  this.unschedule(this.shieldDeactivate);
+	  this.energyShield.stopAllActions();
+	  this.shieldActivate = false;
+	  this.energyShield.runAction(cc.FadeOut.create(0.2));
 	},
 	setInvunerable:function() {
 	  this.invunerable = true;
 	  this.runAction(cc.RepeatForever.create(cc.Sequence.create(cc.FadeIn.create(0.2), cc.FadeOut.create(0.2))));
 	  this.schedule(this.stopInvunerable, GM.SHIP.INVUNERABLETIME);
+	  cc.audioEngine.playEffect(res.Damage_wav);
 	},
 	stopInvunerable:function() {
-//	  cc.log("stopInvunerable!");
 	  this.stopAllActions();
 	  this.unschedule(this.stopInvunerable);
 	  this.invunerable = false;
 	  this.runAction(cc.FadeIn.create(0.2));
 	},
-	skillCompond:function() {
-		
+	skillLaser:function() {
+	  if (this.laserField != null) {
+	    return;
+	  }
+		this.laserField = new Laser(res.Laser_png);
+		this.addChild(this.laserField);
+		this.laserField.anchorX = 0;
+		this.laserField.x = this.width;
+		this.laserField.y = this.height/2;
+		this.laserField.scaleX = 5;
+		this.laserField.scaleY = 2;
+		this.laserField.runAction(cc.Sequence.create(cc.DelayTime.create(1.5), cc.CallFunc.create(this.skillLaserEnd, this, null)));
+		this.energyArray[GM.ENERGYTYPE.RED] -= GM.SHIP.LASERTHRESOLD;
+		cc.audioEngine.playEffect(res.Laser_wav);
 	},
-	skillDecompose:function() {
-		
-	},
-	skillMine:function() {
-		
-	},
-	skillShieldBlow:function() {
-		
+	skillLaserEnd:function() {
+	  cc.log("laser end");
+	  this.removeChild(this.laserField);
+	  this.laserField = null;
 	}
 });

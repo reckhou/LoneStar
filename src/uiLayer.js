@@ -40,13 +40,13 @@ var UILayer = cc.Layer.extend({
 //		skill_laser.scale = 1.5;
 //		this.addChild(skill_laser);
 		
-		var skill_explosion = cc.Sprite.create(res.Skill_explosion_jpg);
-		
-		skill_explosion.x = winSize.width - 100;
-		skill_explosion.y = 50;
-		skill_explosion.anchorY = 0;
-		skill_explosion.scale = 1.5;
-		this.addChild(skill_explosion);
+//		var skill_explosion = cc.Sprite.create(res.Skill_explosion_jpg);
+//		
+//		skill_explosion.x = winSize.width - 100;
+//		skill_explosion.y = 50;
+//		skill_explosion.anchorY = 0;
+//		skill_explosion.scale = 1.5;
+//		this.addChild(skill_explosion);
 		g_sharedUILayer = this;
 		
 		this.progressArray = new Array();

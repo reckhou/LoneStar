@@ -21,17 +21,16 @@ var BattleLayer = cc.Layer.extend({
 		this.ship.x = 100;
 		this.ship.y = size.height/2;
 		this.ship.setInvunerable();
-		this.schedule(this.spawnEnergy, 5);
-		this.schedule(this.spawnAstroid, 4);
+		this.schedule(this.spawnEnergy, 3);
+		this.schedule(this.spawnAstroid, 1.5);
 		this.schedule(this.collideCheck, 1/60);
 		return true;
 	},
 	spawnEnergy:function() {
-//		var spawnCnt = Math.floor((Math.random() * 3) + 1);
-		var spawnCnt = 1;
+		var spawnCnt = Math.floor((Math.random() * 2) + 2);
 		for (var i = 1; i <= spawnCnt; i++) {
 			var screenSize = cc.director.getWinSize();
-			var type = Math.floor((Math.random() * 3));
+			var type = Math.floor((Math.random() * 2));
 //			cc.log("Energy Type: "+type);
 			var startPos = cc.p(screenSize.width + 100 + Math.floor(Math.random()*400 + 100), Math.floor(Math.random() * (screenSize.height-150)/spawnCnt + (screenSize.height-150)/spawnCnt*(i-1) + 100));
 			var endPos = cc.p(-200, Math.random() * screenSize.height - GM.SHIP.VBORDERLIMIT*2 + GM.SHIP.VBORDERLIMIT);
@@ -59,14 +58,14 @@ var BattleLayer = cc.Layer.extend({
 	},
 	spawnEnergyByDestroyAstroid: function(x, y) {
 	  var array = new Array();
-	  var redCnt = Math.floor(Math.random()*2 + 1);
+	  var redCnt = Math.floor(Math.random()*3);
 	  array.push(redCnt);
-	  var yellowCnt = Math.floor(Math.random()*2 + 1);
+	  var yellowCnt = Math.floor(Math.random()*2);
 	  array.push(yellowCnt);
-	  var blueCnt = Math.floor(Math.random()*2);
+	  var blueCnt = Math.floor(Math.random()*3);
 	  array.push(blueCnt);
 	  var totalCnt = redCnt + yellowCnt+ blueCnt;
-	  cc.log("Red: "+redCnt+" Yellow: "+yellowCnt+" Blue: "+blueCnt);
+	  //cc.log("Red: "+redCnt+" Yellow: "+yellowCnt+" Blue: "+blueCnt);
 	  var yRange = 200;
 	  var spawnCnt = 0;
 	  var blowDistance = 150;
@@ -77,7 +76,7 @@ var BattleLayer = cc.Layer.extend({
 	      var targetY = y + Math.sin(curAngle)*blowDistance;
 	      var energy = new Energy(i, cc.p(x, y));
 	      this.addChild(energy);
-	      cc.log(curAngle+" "+Math.cos(curAngle)*blowDistance+" "+Math.sin(curAngle)*blowDistance);
+	      //cc.log(curAngle+" "+Math.cos(curAngle)*blowDistance+" "+Math.sin(curAngle)*blowDistance);
 	      var easeIn = cc.MoveTo(1.0, cc.p(targetX, targetY)).easing(cc.easeIn(0.2));
 	      var wait = cc.DelayTime.create(0.2);
 	      var moveOut = cc.MoveTo((targetX+100)/energy.xVelocity, cc.p(-100, targetY));
@@ -96,11 +95,11 @@ var BattleLayer = cc.Layer.extend({
 		}
 	},
 	removeAstroid:function(pSender) {
-		this.removeChild(pSender);
 		var idx = this.astroidArray.indexOf(pSender);
 		if (idx > -1) {
 			this.astroidArray.splice(idx, 1);
 		}
+		pSender.eliminate();
 	},
 	// touch
 	onEnter:function(){
@@ -143,22 +142,46 @@ var BattleLayer = cc.Layer.extend({
 				return;
 		}
 		
+		if (this.ship.energyArray[GM.ENERGYTYPE.BLUE] >= 100) {
+		  var gameOver = cc.LabelTTF.create("YOU WIN!", "Arial", "64");
+		  this.addChild(gameOver);
+		  var winSize = cc.director.getWinSize();
+		  gameOver.x = winSize.width/2;
+		  gameOver.y = winSize.height/2;
+		  this.schedule(this.restartGame, 3);
+		  this.gameRestarting = true;
+		  return;
+		}
+		
+		if (this.ship.energyArray[GM.ENERGYTYPE.RED] >= GM.SHIP.LASERTHRESOLD) {
+		  this.ship.skillLaser();
+		}
+		
+		/* Weapon check */
+		if (this.ship.laserField != null) {
+		  for (var i = 0; i < this.astroidArray.length; i++) {
+		    if (this.collide(this.ship.laserField, this.astroidArray[i], this)) {
+		      cc.log("hit!!");
+		      this.spawnEnergyByDestroyAstroid(this.astroidArray[i].x, this.astroidArray[i].y);
+		      this.removeAstroid(this.astroidArray[i]);
+		    }
+		  }
+		}
+		
 		/* Astroid check */
-		if (this.ship.invunerable == false) {
   		for (var i = 0; i < this.astroidArray.length; i++) {
-  		  if (this.collide(this.ship, this.astroidArray[i])) {
-//  		    cc.log("collide!");
-  		    this.ship.damage();
-  		    this.spawnEnergyByDestroyAstroid(this.astroidArray[i].x, this.astroidArray[i].y);
-  		    this.removeAstroid(this.astroidArray[i]);
-  		    break;
+  		  if (this.collide(this.ship, this.astroidArray[i], this)) {
+  		    this.ship.hit();
+  		    if (this.ship.shieldActivate) {
+  		      this.spawnEnergyByDestroyAstroid(this.astroidArray[i].x, this.astroidArray[i].y);
+  		      this.removeAstroid(this.astroidArray[i]);
+  		    }
   		  }
   		}
-		}
 		
 		/* Energy check */
 		for (var i = 0; i < this.energyArray.length; i++) {
-			if (this.collide(this.ship, this.energyArray[i])) {
+			if (this.collide(this.ship, this.energyArray[i], this)) {
 				var energyType = this.energyArray[i].type;
 				
 				this.ship.consumeEnergy(energyType);
@@ -167,10 +190,13 @@ var BattleLayer = cc.Layer.extend({
 			}
 		}
 	},
-	collide:function (a, b) {
-		var ax = a.x, ay = a.y, bx = b.x, by = b.y;
-		if (Math.abs(ax - bx) > MAX_CONTAINT_WIDTH || Math.abs(ay - by) > MAX_CONTAINT_HEIGHT)
-			return false;
+	collide:function (a, b, base) {
+	  var aPos = a.convertToWorldSpaceAR(cc.p(0, 0));
+	  var bPos = b.convertToWorldSpaceAR(cc.p(0, 0));
+		var ax = aPos.x, ay = aPos.y, bx = bPos.x, by = bPos.y;
+		
+//		if (Math.abs(ax - bx) > MAX_CONTAINT_WIDTH || Math.abs(ay - by) > MAX_CONTAINT_HEIGHT)
+//			return false;
 
 		var aRect = a.collideRect(ax, ay);
 		var bRect = b.collideRect(bx, by);

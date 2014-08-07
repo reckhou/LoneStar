@@ -13,10 +13,16 @@ var res = {
     Energy_blue_wav: "res/energy_blue.wav",
     Bgm_mp3: "res/music/bgm1.mp3",
     Bgm_universe_mp3: "res/music/bgm_universe.mp3",
+    Bgm8bit_mp3: "res/bgm8bit.mp3",
+    Shield_wav: "res/shield.wav",
+    Laser_wav: "res/laser.wav",
     Astroid_png: "res/astroid.png",
     Skill_laser_jpg: "res/skill_laser.jpg",
     Skill_explosion_jpg: "res/skill_explosion.jpg",
-    Bar_png: "res/bar.png"
+    Bar_png: "res/bar.png",
+    EnergySheild_png: "res/energyShield.png",
+    Laser_png: "res/laser.png",
+    AstroidExplode_wav: "res/astroidExplode.wav"
 };
 
 var g_resources = [

@@ -15,6 +15,7 @@ var mainLayer = cc.Layer.extend ({
 		var d = new Date();
 
 		var size = cc.director.getWinSize();
+		cc.log("WinSize:"+size.width+"X"+size.height);
 		this.bgLayer = cc.Layer.create();
 		this.addChild(this.bgLayer);
 
@@ -76,9 +77,9 @@ var MainScene = cc.Scene.extend({
 		var layer = new mainLayer();
 		this.addChild(layer);
 		if (!gIsMusicPlaying) {
-		  cc.log("Play music: "+res.Bgm_universe_mp3);
+		  cc.log("Play music: "+res.Bgm8bit_mp3);
 		  gIsMusicPlaying = true;
-			cc.audioEngine.playMusic(res.Bgm_universe_mp3, true);
+			cc.audioEngine.playMusic(res.Bgm8bit_mp3, true);
 		} else {
 		  cc.log("Music already playing!");
 		}

@@ -12,9 +12,9 @@ GM.ENERGYTYPE = {
 };
 
 GM.STARTENERGY = {
-	RED:50,
+	RED:18,
 	YELLOW:50,
-	BLUE:50
+	BLUE:40
 };
 
 GM.COMBO = {
@@ -25,12 +25,12 @@ GM.COMBO = {
 GM.ENERGY = {
 	POWER:4,
 	MAX:100,
-	XVELOCITY:50
+	XVELOCITY:150
 };
 
 GM.ASTROID = {
 	XVELOCITY: 150,
-	DAMAGE: 15
+	DAMAGE: 17
 };
 
 GM.ASTROID.TYPE = {
@@ -40,5 +40,6 @@ GM.ASTROID.TYPE = {
 
 GM.SHIP = {
     INVUNERABLETIME: 3,
-    VBORDERLIMIT: 25 // vertical position limit according to border
+    VBORDERLIMIT: 25, // vertical position limit according to border
+    LASERTHRESOLD: 20
 };
