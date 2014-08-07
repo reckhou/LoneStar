@@ -57,6 +57,37 @@ var BattleLayer = cc.Layer.extend({
 			astroid.runAction(cc.Sequence.create(action, cc.CallFunc.create(this.removeAstroid, this, astroid)));
 		}
 	},
+	spawnEnergyByDestroyAstroid: function(x, y) {
+	  var array = new Array();
+	  var redCnt = Math.floor(Math.random()*2 + 1);
+	  array.push(redCnt);
+	  var yellowCnt = Math.floor(Math.random()*2 + 1);
+	  array.push(yellowCnt);
+	  var blueCnt = Math.floor(Math.random()*2);
+	  array.push(blueCnt);
+	  var totalCnt = redCnt + yellowCnt+ blueCnt;
+	  cc.log("Red: "+redCnt+" Yellow: "+yellowCnt+" Blue: "+blueCnt);
+	  var yRange = 200;
+	  var spawnCnt = 0;
+	  var blowDistance = 150;
+	  for (var i = 0; i < array.length; i++) {
+	    for(var j = 0; j < array[i]; j++) {
+	      var curAngle = (Math.random()*240-120)/totalCnt*spawnCnt*0.017453;
+	      var targetX = x + Math.cos(curAngle)*blowDistance;
+	      var targetY = y + Math.sin(curAngle)*blowDistance;
+	      var energy = new Energy(i, cc.p(x, y));
+	      this.addChild(energy);
+	      cc.log(curAngle+" "+Math.cos(curAngle)*blowDistance+" "+Math.sin(curAngle)*blowDistance);
+	      var easeIn = cc.MoveTo(1.0, cc.p(targetX, targetY)).easing(cc.easeIn(0.2));
+	      var wait = cc.DelayTime.create(0.2);
+	      var moveOut = cc.MoveTo((targetX+100)/energy.xVelocity, cc.p(-100, targetY));
+	      var remove = cc.CallFunc.create(this.removeEnergy, this, energy);
+	      energy.runAction(cc.Sequence.create(easeIn, wait, moveOut, remove));
+	      this.energyArray.push(energy);
+	      spawnCnt++;
+	    }
+	  }
+	},
 	removeEnergy:function(pSender) {
 		this.removeChild(pSender);
 		var idx = this.energyArray.indexOf(pSender);
@@ -116,8 +147,10 @@ var BattleLayer = cc.Layer.extend({
 		if (this.ship.invunerable == false) {
   		for (var i = 0; i < this.astroidArray.length; i++) {
   		  if (this.collide(this.ship, this.astroidArray[i])) {
-  		    cc.log("collide!");
+//  		    cc.log("collide!");
   		    this.ship.damage();
+  		    this.spawnEnergyByDestroyAstroid(this.astroidArray[i].x, this.astroidArray[i].y);
+  		    this.removeAstroid(this.astroidArray[i]);
   		    break;
   		  }
   		}

@@ -29,7 +29,7 @@ var mainLayer = cc.Layer.extend ({
 		var move = cc.MoveTo.create(this.newBgDeltaTime, cc.p(-(sprite1.width),0));
 		sprite1.runAction(move);
 		
-		this.schedule(this.updateBg, 1/60);
+		this.schedule(this.startUpdateBg, this.newBgDeltaTime);
 		this.battleLayer = BattleLayer.create();
 		this.addChild(this.battleLayer);
 		
@@ -38,7 +38,10 @@ var mainLayer = cc.Layer.extend ({
 		this.uiLayer.ship = this.battleLayer.ship;
 		return true;
 	},
-	
+	startUpdateBg:function() {
+	  this.unschedule(this.startUpdateBg);
+	  this.schedule(this.updateBg, 1/60);
+	},
 	updateBg:function() {
 		var d = new Date();
 		var timeNow = d.getTime();

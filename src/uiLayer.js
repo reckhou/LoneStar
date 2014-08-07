@@ -16,7 +16,7 @@ var UILayer = cc.Layer.extend({
 		this.energyLabel.x = 0;
 		this.energyLabel.y = winSize.height;
 		
-		this.warningLabel = cc.LabelTTF.create("蓝色能量不足!!","Arial", 64);
+		this.warningLabel = cc.LabelTTF.create("蓝色能量过低!!","Arial", 48);
 		this.warningLabel.color = cc.color(0,255,255);
 		this.addChild(this.warningLabel);
 		this.warningLabel.x = winSize.width/2;
@@ -33,16 +33,16 @@ var UILayer = cc.Layer.extend({
 		title.color = cc.color(0, 0, 0);
 		title.opacity = 0;
 		
-		var skill_laser = cc.Sprite.create(res.Skill_laser_jpg);
-		skill_laser.x = winSize.width - 200;
-		skill_laser.y = 50;
-		skill_laser.anchorY = 0;
-		skill_laser.scale = 1.5;
-		this.addChild(skill_laser);
+//		var skill_laser = cc.Sprite.create(res.Skill_laser_jpg);
+//		skill_laser.x = winSize.width - 200;
+//		skill_laser.y = 50;
+//		skill_laser.anchorY = 0;
+//		skill_laser.scale = 1.5;
+//		this.addChild(skill_laser);
 		
 		var skill_explosion = cc.Sprite.create(res.Skill_explosion_jpg);
 		
-		skill_explosion.x = skill_laser.x + 100;
+		skill_explosion.x = winSize.width - 100;
 		skill_explosion.y = 50;
 		skill_explosion.anchorY = 0;
 		skill_explosion.scale = 1.5;

@@ -10,7 +10,7 @@ var Astroid = cc.Sprite.extend({
 		  this.type = GM.ASTROID.TYPE.BIG;
 		} else {
 		  this.type = GM.ASTROID.TYPE.SMALL;
-		  this.scale = 0.5;
+		  this.scale = 0.35;
 		}
 		this.rotation = Math.random() * 360;
 		this.runAction(cc.RepeatForever.create(cc.RotateBy.create(5, -90, -90)));

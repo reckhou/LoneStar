@@ -141,7 +141,7 @@ var Ship = cc.Sprite.extend({
 	  this.schedule(this.stopInvunerable, GM.SHIP.INVUNERABLETIME);
 	},
 	stopInvunerable:function() {
-	  cc.log("stopInvunerable!");
+//	  cc.log("stopInvunerable!");
 	  this.stopAllActions();
 	  this.unschedule(this.stopInvunerable);
 	  this.invunerable = false;
